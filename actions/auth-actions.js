@@ -1,6 +1,6 @@
 'use server';
-import { createUser } from "@/lib/user";
-import { hashUserPassword } from "@/lib/hash";
+import { createUser, getUserByEmail } from "@/lib/user";
+import { hashUserPassword, verifyPassword } from "@/lib/hash";
 import { createAuthSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -41,4 +41,41 @@ export async function signup(preveState, formData) {
     }
     
     // No need for the user storage step here if `redirect` is called, as the execution will stop
+}
+
+
+
+export async function login(preveState, formData) {
+    const email = formData.get('email');
+    const password = formData.get('password');
+
+    const existingUser = getUserByEmail(email);
+
+    if(!existingUser){
+        return {
+            errors: {
+                email: 'Could not authenticate user , please check your credentials.'
+            }
+        }
+    }
+    
+    const isValidPassword = verifyPassword(existingUser.password , password);
+
+    if(!isValidPassword){
+        return { 
+            errors:{
+                password : 'Could not authenticate user , please check your credentials.'
+            }
+        }
+    }
+    await createAuthSession(existingUser.id);
+    redirect('/training'); 
+}
+
+
+export async function auth(mode, preveState, formData) {
+    if(mode === 'login'){
+      return login(preveState, formData)
+    }
+    return signup(preveState, formData)
 }
