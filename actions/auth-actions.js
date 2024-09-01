@@ -1,7 +1,7 @@
 'use server';
 import { createUser, getUserByEmail } from "@/lib/user";
 import { hashUserPassword, verifyPassword } from "@/lib/hash";
-import { createAuthSession } from "@/lib/auth";
+import { createAuthSession, destroySession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export async function signup(preveState, formData) {
@@ -78,4 +78,10 @@ export async function auth(mode, preveState, formData) {
       return login(preveState, formData)
     }
     return signup(preveState, formData)
+}
+
+
+export async function logout() {
+    await destroySession();
+    redirect('/')
 }
